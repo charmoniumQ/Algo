@@ -18,7 +18,7 @@ bool test(Tester& tester, uint64_t num_tests) {
   list<string> history;
   auto startTime = chrono::high_resolution_clock::now();
 
-  for (uint64_t i = 0; i < num_tests; ++i) {
+  for (uint64_t i = 0; i < num_tests and success; ++i) {
   	string event;
   	try {
   	  tester.test(branch_picker(generator), event, success);
@@ -26,10 +26,12 @@ bool test(Tester& tester, uint64_t num_tests) {
   	  history.push_back(std::string("Exception [") + e.what() + std::string("] while running"));
   	}
   	history.push_back(event);
-  	if (! success || ! tester.check_every()) {
-  	  success = false;
-  	  break;
-  	}
+	try {
+	  success = tester.check_every();
+	} catch (runtime_error e) {
+	  history.push_back(std::string("Exception [") + e.what() + std::string("] while checking"));
+	  success = false;
+	}
   }
 
   auto endTime = chrono::high_resolution_clock::now();

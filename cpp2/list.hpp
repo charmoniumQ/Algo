@@ -56,8 +56,8 @@ public:
 	size_ = 0;
   }
   LinkedList(const LinkedList<T>& other) {
-	for (other.reset_start(); !other.has_next(); ++other) {
-	  append(*other);
+	for (auto it = other.cbegin(); it.has(); ++it) {
+	  append(*it);
 	}
   }
   LinkedList(LinkedList<T>&& other) noexcept {
@@ -70,8 +70,8 @@ public:
   }
   LinkedList<T>& operator=(const LinkedList<T>& other) {
 	while (!empty()) { pop_front(); }
-	for (other.reset_start(); !other.has_next(); ++other) {
-	  append(*other);
+	for (auto it = other.cbegin(); other.has(); +it) {
+	  append(*it);
 	}
 	return *this;
   }
@@ -105,6 +105,19 @@ public:
 	++size_;
   }
 
+  // Peek
+  T& peek_front() {
+	if (not empty()) {
+	  return head->get_data();
+	} else { throw ex("Can't peek from empty list"); }
+  }
+  T& peek_back() {
+	if (not empty()) {
+	  return tail->get_data();
+	} else { throw ex("Can't peek from empty list"); }
+  }
+
+  // Delete
   T pop_front() {
 	if (!empty()) {
 	  valid();
@@ -142,6 +155,26 @@ public:
 	} else {
 	  throw ex("Can't pop from empty list");
 	}
+  }
+  T* raw_array() {
+	if (not empty()) {
+	  T* out = new T[size()];
+	  uint64_t ctr = 0;
+	  for (Iterator it = cbegin(); it != cend(); ++it, ++ctr) {
+		out[ctr] = *it;
+	  }
+	  return out; // You are in charge of deleteing this
+	} else { return nullptr; }
+  }
+  T** raw_ptr_array() {
+	if (not empty()) {
+	  T** out = new T*[size()];
+	  uint64_t ctr = 0;
+	  for (Iterator it = cbegin(); it != cend(); ++it, ++ctr) {
+		out[ctr] = &*it;
+	  }
+	  return out; // You are in charge of deleteing this
+	} else { return nullptr; }
   }
 
   // Size info
@@ -215,7 +248,7 @@ public:
 	  Node* c = head;
 	  assert(head != nullptr, "head is null on non-empty list");
 	  while (c->get_next() != nullptr) {
-		assert(c->valid(), std::to_string(c->get_data()) + " is not valid");
+		assert(c->valid(), "not valid");
 		++size_test;
 		c = c->get_next();
 	  }

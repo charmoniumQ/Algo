@@ -1,16 +1,16 @@
 CC = clang++
 CFLAGS = -g -Weverything -Wno-c++98-compat -Wno-padded -std=c++11 -O0 -I.
-FILES = test_list.cpp
+FILES = test_trie.cpp
 TARGET = bin
 
 $(TARGET):
 	$(CC) $(CFLAGS) $(FILES) -o $(TARGET)
 
 test: $(TARGET);
-	./$(TARGET) 20000
+	./$(TARGET) 500
 
 mtest: $(TARGET);
-	valgrind --tool=memcheck --leak-check=full ./$(TARGET) 1000
+	valgrind --tool=memcheck --leak-check=full ./$(TARGET) 100
 
 debug: $(TARGET);
-	lldb -- $(TARGET) 1000
+	lldb -- $(TARGET) 100
