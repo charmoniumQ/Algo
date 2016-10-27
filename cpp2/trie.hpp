@@ -6,20 +6,12 @@
 #include <sstream>
 #include "list.hpp"
 #include "pair.hpp"
-
-
-// #include <string>
-// #include <iostream>
-// #include <string.h>
+#include "assert.hpp"
 
 #ifndef LIST_HPP_
-void assert(bool, std::string);
 
 typedef std::runtime_error ex;
 
-void assert(bool thing, std::string msg) {
-  if (not thing) { throw ex(msg); }
-}
 #endif
 
 template <typename T>

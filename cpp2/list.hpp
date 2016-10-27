@@ -3,14 +3,9 @@
 
 #include <stdexcept>
 #include <sstream>
-
-void assert(bool, std::string);
+#include "assert.hpp"
 
 typedef std::runtime_error ex;
-
-void assert(bool thing, std::string msg) {
-  if (!thing) { throw ex(msg); }
-}
 
 template <typename T>
 class LinkedList {
@@ -202,6 +197,7 @@ public:
 	  return *this;
 	}
 	Iterator& operator--() {
+	  if (prev == nullptr) { throw ex("Can't decrement past the beginning"); }
 	  current = prev; prev = prev->get_prev();
 	  return *this;
 	}

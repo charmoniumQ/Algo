@@ -1,6 +1,6 @@
 CC = clang++
 CFLAGS = -g -Weverything -Wno-c++98-compat -Wno-padded -std=c++11 -O0 -I.
-FILES = test_trie.cpp
+FILES = test_dset.cpp
 TARGET = bin
 
 $(TARGET):
@@ -13,4 +13,4 @@ mtest: $(TARGET);
 	valgrind --tool=memcheck --leak-check=full ./$(TARGET) 100
 
 debug: $(TARGET);
-	lldb -- $(TARGET) 100
+	lldb -- $(TARGET) 500
