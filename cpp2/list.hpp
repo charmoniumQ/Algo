@@ -13,17 +13,16 @@ private:
   class Node {
   public:
 	Node(T data_) : data(data_), prev(nullptr), next(nullptr) { }
-	void static link(Node* left, Node* right) {
-	  using namespace std;
+	static void link(Node* left, Node* right) {
 	  assert(left == nullptr || right == nullptr || left != right, "Cannot link the same two elements");
-	  assert(left == nullptr || left->valid(), "Cannot link; left is not valid");
-	  assert(right == nullptr || right->valid(), "Cannot link; right is not valid");
+	  assert(left == nullptr || left->valid(), "left is not valid");
+	  assert(right == nullptr || right->valid(), "right is not valid");
 	  if (left != nullptr) { left->next = right; }
 	  if (right != nullptr) { right->prev = left; }
 	  assert(left == nullptr || left->valid(), "left is not valid");
 	  assert(right == nullptr || right->valid(), "right is not valid");
 	}
-	bool valid() {
+	bool valid(Node* current) {
 	  //checks that the double-link property is preserved
 	  assert(prev == nullptr || prev->next == this, "prev is not linked to this");
 	  assert(next == nullptr || next->prev == this, "next is not linked to this");
@@ -32,7 +31,6 @@ private:
 	  assert(prev == nullptr || next == nullptr || prev != next, "triangular link");
 	  return true;
 	}
-
 	Node* get_next() { return next; }
 	Node* get_prev() { return prev; }
 	T& get_data() { return data; }
@@ -58,6 +56,7 @@ public:
   LinkedList(LinkedList<T>&& other) noexcept {
 	tail = other.tail;
 	head = other.head;
+	size_ = other.size_;
 	other.head = other.tail = nullptr;
   }
   ~LinkedList() {
@@ -74,6 +73,7 @@ public:
 	while (!empty()) { pop_front(); }
 	tail = other.tail;
 	head = other.head;
+	size_ = other.size_;
 	other.head = other.tail = nullptr;
 	return *this;
   }
@@ -151,22 +151,12 @@ public:
 	  throw ex("Can't pop from empty list");
 	}
   }
-  T* raw_array() {
+  T&* raw_array() {
 	if (not empty()) {
-	  T* out = new T[size()];
+	  T&* out = new T&[size()];
 	  uint64_t ctr = 0;
 	  for (Iterator it = cbegin(); it != cend(); ++it, ++ctr) {
 		out[ctr] = *it;
-	  }
-	  return out; // You are in charge of deleteing this
-	} else { return nullptr; }
-  }
-  T** raw_ptr_array() {
-	if (not empty()) {
-	  T** out = new T*[size()];
-	  uint64_t ctr = 0;
-	  for (Iterator it = cbegin(); it != cend(); ++it, ++ctr) {
-		out[ctr] = &*it;
 	  }
 	  return out; // You are in charge of deleteing this
 	} else { return nullptr; }
@@ -183,7 +173,7 @@ public:
 	bool has() const { return current != nullptr; }
 	bool operator==(const Iterator& other) { return current == other.current; }
 	bool operator!=(const Iterator& other) { return ! (*this == other); }
-	const T& operator*() {
+	T& operator*() {
 	  if (has()) { return current->get_data(); }
 	  else { throw ex("Can't dereference invalid iterator"); }
 	}
@@ -201,15 +191,15 @@ public:
 	  current = prev; prev = prev->get_prev();
 	  return *this;
 	}
-	Iterator operator++(int) {
-	  Iterator other (*this);
-	  ++*this;
-	  return other;
+	Iterator& operator+=(uint64_t n) {
+	  for (uint64_t i = 0; i < n; ++i) {
+		++*this;
+	  }
 	}
-	Iterator operator--(int) {
-	  Iterator other (*this);
-	  --*this;
-	  return other;
+	Iterator& operator-=(uint64_t n) {
+	  for (uint64_t i = 0; i < n; ++i) {
+		--*this;
+	  }
 	}
   private:
 	Node* prev = nullptr;
@@ -231,6 +221,11 @@ public:
 	  out << "]";
 	}
 	return out;
+  }
+  T& operator[](uint64_t i) {
+	Iterator c = cbegin();
+	c += i;
+	return *c;
   }
 
   bool valid() const {

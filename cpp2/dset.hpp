@@ -23,19 +23,22 @@ public:
   ~Dset() noexcept { delete[] data; delete[] sizes; }
 
   /* Actual stuff */
-  void unionf(int_t a, int_t b) {
+  bool unionf(int_t a, int_t b) {
 	LinkedList<int_t> patha, pathb;
 	find_path(a, patha);
 	find_path(b, pathb);
 	int_t aroot = patha.peek_back();
 	int_t broot = pathb.peek_back();
-	if (aroot != broot) {
+	if (aroot == broot) {
+	  return false;
+	} else {
 	  int_t root;
-	  root = (sizes[aroot] >= sizes[broot]) ? patha.pop_back() : root = pathb.pop_back();
+	  root = (sizes[aroot] > sizes[broot]) ? patha.pop_back() : pathb.pop_back();
 	  sizes[root] = sizes[aroot] + sizes[broot];
 	  compress(patha, root);
 	  compress(pathb, root);
 	  --sets_;
+	  return true;
 	}
   }
   int_t find(int_t x) {
