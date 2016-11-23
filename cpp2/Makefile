@@ -1,6 +1,7 @@
 CC = clang++
 CFLAGS = -g -Weverything -Wno-c++98-compat -Wno-padded -std=c++11 -O0 -I.
-FILES = test_dset.cpp
+#FILES = test_adj_matrix.cpp
+FILES = test_array.cpp
 TARGET = bin
 
 $(TARGET):
