@@ -1,15 +1,16 @@
-#ifndef ARRAY_HPP_
-#define ARRAY_HPP_
+#ifndef DARRAY_HPP_
+#define DARRAY_HPP_
 
 #include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <functional>
 
-template <typename T, uint32_t size_>
-class Array_ {
+template <typename T>
+class DynArray_ {
 private:
   T* const data;
+  uint32_t size_;
 protected:
   // Not really const, use with care
   T& get(int64_t i) const {
@@ -28,40 +29,45 @@ protected:
   
 public:
 
-  // Big five
-  Array_() : data(new T[size_]) { }
-  Array_(const Array_& other) : data(new T[size_]) { *this = other; }
-  ~Array_() noexcept {
+  // Big three
+  DynArray_(uint32_t size__) : data(new T[size__]), size_(size__) { }
+  DynArray_(const DynArray_& other)
+	: data(new T[other.size_]), size_(other.size_) { *this = other; }
+  ~DynArray_() noexcept {
 	delete[] data;
   }
-  Array_& operator=(const Array_<T, size_>& other) {
+  DynArray_& operator=(const DynArray_& other) {
+	if (size_ != other.size_) {
+	  throw std::runtime_error("Cannot change array size with assignment");
+	}
 	for (uint32_t i = 0; i < size_; ++i) {
 	  data[i] = other.data[i];
 	}
 	return *this;
   }
+  uint32_t size() const { return size_; }
 };
 
-template <typename T, uint32_t size_>
-class Array : public Array_<T, size_> {
+template <typename T>
+class DynArray : public DynArray_<T> {
 private:
   // Not necessarily const, use with care
-  T& get(int64_t i) const { return Array_<T, size_>::get(i); }
+  T& get(int64_t i) const { return DynArray_<T>::get(i); }
 public:
+  DynArray(uint32_t size_) : DynArray_<T>(size_) {}
   const T& operator[](int64_t i) const { return get(i); }
   T& operator[](int64_t i) { return get(i); }
-  uint32_t size() const { return size_; }
+  uint32_t size() const { return DynArray_<T>::size(); }
 
   // Transformations
-  template<uint32_t start, uint32_t stop>
-  Array<T, stop - start> subarray() {
+  DynArray<T> subarray(uint32_t start, uint32_t stop) {
 	if (start > stop) {
 	  throw std::runtime_error("start > stop");
 	}
-	if (stop >= size_) {
+	if (stop >= size()) {
 	  throw std::runtime_error("Stop too high");
 	}
-	Array<T, stop - start> result;
+	DynArray<T> result (stop - start);
 	for (uint32_t i = 0; i < stop - start; ++i) {
 	  result[i] = get(i + start);
 	}
@@ -69,20 +75,20 @@ public:
   }
 
   template <typename U>
-  Array<U, size_> map(std::function<U(T, uint32_t)> f) const {
-	Array<U, size_> result;
-	for (uint32_t i = 0; i < size_; ++i) {
+  DynArray<U> map(std::function<U(T, uint32_t)> f) const {
+	DynArray<U> result (size());
+	for (uint32_t i = 0; i < size(); ++i) {
 	  result[i] = f(get(i), i);
 	}
 	return result;
   }
   void foreach(std::function<void(T, uint32_t)> f) const {
-	for (uint32_t i = 0; i < size_; ++i) {
+	for (uint32_t i = 0; i < size(); ++i) {
 	  f(get(i), i);
 	}
   }
   void inmap(std::function<T(T, uint32_t i)> f) {
-	for (uint32_t i = 0; i < size_; ++i) {
+	for (uint32_t i = 0; i < size(); ++i) {
 	  get(i) = f(get(i), i);
 	}
   }
