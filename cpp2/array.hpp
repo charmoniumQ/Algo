@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <string>
+#include <iostream>
 #include <functional>
 
 template <typename T, uint32_t size_>
@@ -52,6 +53,8 @@ public:
   T& operator[](int64_t i) { return get(i); }
   uint32_t size() const { return size_; }
 
+  friend ostream& operator<<(ostream& os, const Array& dt);  
+
   // Transformations
   template<uint32_t start, uint32_t stop>
   Array<T, stop - start> subarray() {
@@ -87,5 +90,17 @@ public:
 	}
   }
 };
+
+template <typename T, uint32_t sizes>
+ostream& operator<<(ostream& os, const Array<T>& array) {
+  os << "[";
+  for (uint32_t i = 0; i < size - 1; ++i) {
+	os << array[i] << ", ";
+  }
+  if (size > 0) {
+	os << array[-1] << "]";
+  }
+  return os;
+}
 
 #endif

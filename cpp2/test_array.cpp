@@ -1,6 +1,6 @@
 #include <iostream>
 #include "array.hpp"
-#include "darray.hpp"
+#include "dynarray.hpp"
 
 using namespace std;
 

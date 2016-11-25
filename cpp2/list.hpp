@@ -22,7 +22,7 @@ private:
 	  assert(left == nullptr || left->valid(), "left is not valid");
 	  assert(right == nullptr || right->valid(), "right is not valid");
 	}
-	bool valid(Node* current) {
+	bool valid() {
 	  //checks that the double-link property is preserved
 	  assert(prev == nullptr || prev->next == this, "prev is not linked to this");
 	  assert(next == nullptr || next->prev == this, "next is not linked to this");
@@ -150,16 +150,6 @@ public:
 	} else {
 	  throw ex("Can't pop from empty list");
 	}
-  }
-  T&* raw_array() {
-	if (not empty()) {
-	  T&* out = new T&[size()];
-	  uint64_t ctr = 0;
-	  for (Iterator it = cbegin(); it != cend(); ++it, ++ctr) {
-		out[ctr] = *it;
-	  }
-	  return out; // You are in charge of deleteing this
-	} else { return nullptr; }
   }
 
   // Size info
