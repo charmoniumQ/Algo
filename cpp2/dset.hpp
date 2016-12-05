@@ -41,6 +41,12 @@ public:
 	  return true;
 	}
   }
+
+  int_t subset_size(int_t x) {
+	int_t root = find(x);
+	return sizes[root];
+  }
+
   int_t find(int_t x) {
 	LinkedList<int_t> path;
 	find_path(x, path);

@@ -62,5 +62,6 @@ void mergeSort(Array& array, uint32_t begin, uint32_t end) {
 	copy<T*, Array>(tmpArray, 0, array, begin, n);
   }
 }
-
+// Uncle Paul
+// Andrea Frescas American Children's Cancer Society
 #endif

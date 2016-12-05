@@ -152,6 +152,16 @@ public:
 	}
   }
 
+  // To array
+  T* toArray() {
+	T* out = new T[size()];
+	Iterator it = cbegin();
+	for (uint64_t i = 0; i < size(); ++i) {
+	  out[i] = *it;
+	}
+	return out;
+  }
+
   // Size info
   bool empty() const { return size_ == 0; }
   uint64_t size() const { return size_; }
@@ -163,11 +173,11 @@ public:
 	bool has() const { return current != nullptr; }
 	bool operator==(const Iterator& other) { return current == other.current; }
 	bool operator!=(const Iterator& other) { return ! (*this == other); }
-	T& operator*() {
+	const T& operator*() {
 	  if (has()) { return current->get_data(); }
 	  else { throw ex("Can't dereference invalid iterator"); }
 	}
-	T* operator->() {
+	const T* operator->() {
 	  if (has()) { return &current->get_data(); }
 	  else { throw ex("Can't dereference invalid iterator"); }
 	}
@@ -196,6 +206,8 @@ public:
 	Node* current = nullptr;
   };
 
+  Iterator begin() { return Iterator(nullptr, head); }
+  Iterator end() { return Iterator(tail, nullptr); }
   Iterator cbegin() const { return Iterator(nullptr, head); }
   Iterator cend() const { return Iterator(tail, nullptr); }
   std::ostream& dump(std::ostream& out) const {

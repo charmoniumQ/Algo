@@ -29,10 +29,14 @@ private:
 
 protected:
   // Not really const, use with care
-  T& get(int64_t i) const {
+  T& get(int64_t i) {
 	return data[normalize(i, size())];
   }
-  
+
+  const T& get(int64_t i) const {
+	return data[normalize(i, size())];
+  }
+
 public:
 
   // Big three
@@ -61,41 +65,63 @@ public:
 template <typename T>
 class DynArray : public DynArray_<T> {
 private:
-  // Not necessarily const, use with care
-  T& get(int64_t i) const { return DynArray_<T>::get(i); }
+  const T& get(int64_t i) const { return DynArray_<T>::get(i); }
+  T& get(int64_t i) { return DynArray_<T>::get(i); }
+
 public:
   DynArray(uint32_t size_) : DynArray_<T>(size_) {}
   const T& operator[](int64_t i) const { return get(i); }
   T& operator[](int64_t i) { return get(i); }
   uint32_t size() const { return DynArray_<T>::size(); } // TODO: is this necessary?
 
+  class Iterator {
+  private:
+	uint32_t i;
+	DynArray& that;
+  public:
+	Iterator(uint32_t i_, DynArray& that_) : i(i_), that(that_) { }
+	Iterator(const Iterator& other) : i(other.i), that(other.that) { }
+	Iterator operator-(uint32_t j) { return Iterator(i - j, that); }
+	Iterator operator+(uint32_t j) { return Iterator(i + j, that); }
+	Iterator operator--(int) { Iterator other (*this); --i; return other; }
+	Iterator operator++(int) { Iterator other (*this); ++i; return other; }
+	Iterator& operator-=(uint32_t j) { i -= j; return *this; }
+	Iterator& operator+=(uint32_t j) { i += j; return *this; }
+	Iterator& operator--() { --i; return *this; }
+	Iterator& operator++() { ++i; return *this; }
+	Iterator operator<(const Iterator& other) const { return i < other.i; }
+	Iterator operator>(const Iterator& other) const { return i > other.i; }
+	Iterator operator<=(const Iterator& other) const { return i <= other.i; }
+	Iterator operator>=(const Iterator& other) const { return i >= other.i; }
+	Iterator operator!=(const Iterator& other) const { return i != other.i; }
+	Iterator operator==(const Iterator& other) const { return i == other.i; }
+	Iterator operator[](int64_t j) {
+	  if (j > 0) {
+		return *this + static_cast<int32_t>(j);
+	  } else {
+		return *this - static_cast<int32_t>(j);
+	  }
+	}
+	T operator*() { return that[i]; }
+	T* operator->() { return *(that[i]); }
+  };
+
+  Iterator begin() { return Iterator(0, *this); }
+  Iterator end() { return Iterator(size(), *this); }
+
   friend std::ostream& operator<<(std::ostream& os, const DynArray<T>& array) {
-  os << "[";
-  for (uint32_t i = 0; i < array.size() - 1; ++i) {
-	os << array[i] << ", ";
+	os << "[";
+	for (uint32_t i = 0; i < array.size() - 1; ++i) {
+	  os << array[i] << ", ";
+	}
+	if (array.size() > 0) {
+	  os << array[-1];
+	}
+	os << "]";
+	return os;
   }
-  if (array.size() > 0) {
-	os << array[-1];
-  }
-  os << "]";
-  return os;
-}
 
   // Transformations
-  DynArray<T> subarray(uint32_t start, uint32_t stop) {
-	if (start > stop) {
-	  throw std::runtime_error("start > stop");
-	}
-	if (stop >= size()) {
-	  throw std::runtime_error("Stop too high");
-	}
-	DynArray<T> result (stop - start);
-	for (uint32_t i = 0; i < stop - start; ++i) {
-	  result[i] = get(i + start);
-	}
-	return result;
-  }
-
   template <typename U>
   DynArray<U> map(std::function<U(T, uint32_t)> f) const {
 	DynArray<U> result (size());
@@ -122,18 +148,32 @@ private:
   DynArray<T> data;
   uint32_t rows_, cols_;
 
-  T& get(uint64_t i, uint64_t j) const {
+  T& get(int64_t i, int64_t j) {
+	return data[normalize(i, rows()) * cols() + normalize(j, cols())];
+  }
+
+  const T& get(int64_t i, int64_t j) const {
 	return data[normalize(i, rows()) * cols() + normalize(j, cols())];
   }
 
   class Row {
   private:
-	uint32_t row;
-	const DynDoubleArray<T>& that;
+	int64_t row;
+	DynDoubleArray<T>& that;
   public:
-	Row(uint32_t row_, const DynDoubleArray<T>& that_) : row(row_), that(that_) {}
-	T& operator[](uint64_t col) { return that.get(row, col); }
+	Row(int64_t row_, DynDoubleArray<T>& that_) : row(row_), that(that_) {}
+	T& operator[](int64_t col) { return that.get(row, col); }
   };
+
+  class ConstRow {
+  private:
+  	int64_t row;
+  	const DynDoubleArray<T>& that;
+  public:
+  	ConstRow(int64_t row_, const DynDoubleArray<T>& that_) : row(row_), that(that_) {}
+  	const T& operator[](int64_t col) const { return that.get(row, col); }
+  };
+
 
 public:
   DynDoubleArray(uint32_t rows__, uint32_t cols__)
@@ -142,8 +182,12 @@ public:
   uint32_t rows() const { return rows_; }
   uint32_t cols() const { return cols_; }
 
-  Row operator[](uint64_t row) {
+  Row operator[](int64_t row) {
 	return Row(row, *this);
+  }
+
+  ConstRow operator[](int64_t row) const {
+  	return ConstRow(row, *this);
   }
 
   template <typename U>
@@ -163,7 +207,7 @@ public:
 	  }
 	}
   }
-  void inmap(std::function<T(T, uint32_t i)> f) {
+  void inmap(std::function<T(T, uint32_t, uint32_t)> f) {
 	for (uint32_t i = 0; i < rows(); ++i) {
 	  for (uint32_t j = 0; j < cols(); ++j) {
 		get(i, j) = f(get(i, j), i, j);
