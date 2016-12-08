@@ -154,9 +154,9 @@ public:
 
   // To array
   T* toArray() {
-	T* out = new T[size()];
+	T* out = new T[size()]();
 	Iterator it = cbegin();
-	for (uint64_t i = 0; i < size(); ++i) {
+	for (uint64_t i = 0; i < size(); ++i, ++it) {
 	  out[i] = *it;
 	}
 	return out;
@@ -195,11 +195,13 @@ public:
 	  for (uint64_t i = 0; i < n; ++i) {
 		++*this;
 	  }
+	  return *this;
 	}
 	Iterator& operator-=(uint64_t n) {
 	  for (uint64_t i = 0; i < n; ++i) {
 		--*this;
 	  }
+	  return *this;
 	}
   private:
 	Node* prev = nullptr;
@@ -210,21 +212,21 @@ public:
   Iterator end() { return Iterator(tail, nullptr); }
   Iterator cbegin() const { return Iterator(nullptr, head); }
   Iterator cend() const { return Iterator(tail, nullptr); }
-  std::ostream& dump(std::ostream& out) const {
-	if (empty()) {
+  friend std::ostream& operator<<(std::ostream& out, const LinkedList<T>& list) {
+	if (list.empty()) {
 	  out << "[]";
 	} else {
-	  Iterator it = cbegin();
-	  out << "[" << std::to_string(*it);
+	  Iterator it = list.cbegin();
+	  out << "[" << *it;
 	  ++it;
-	  for (; it != cend(); ++it) {
-		out << ", " << std::to_string(*it);
+	  for (; it != list.cend(); ++it) {
+		out << ", " << *it;
 	  }
 	  out << "]";
 	}
 	return out;
   }
-  T& operator[](uint64_t i) {
+  const T& operator[](uint64_t i) const {
 	Iterator c = cbegin();
 	c += i;
 	return *c;
@@ -251,8 +253,5 @@ public:
 	return true;
   }
 };
-
-template <typename T>
-std::ostream& operator<<(std::ostream& out, const LinkedList<T>& list) { return list.dump(out); }
 
 #endif

@@ -28,7 +28,6 @@ private:
   uint32_t size_;
 
 protected:
-  // Not really const, use with care
   T& get(int64_t i) {
 	return data[normalize(i, size())];
   }
@@ -172,6 +171,21 @@ private:
   public:
   	ConstRow(int64_t row_, const DynDoubleArray<T>& that_) : row(row_), that(that_) {}
   	const T& operator[](int64_t col) const { return that.get(row, col); }
+
+	friend std::ostream& operator<<(std::ostream& os, const ConstRow& array) {
+	if (array.that.cols() == 0) {
+	  os << "[]";
+	} else if (array.that.cols() == 1) {
+	  os << "[" << array[0] << "]";
+	} else {
+	  os << "[" << array[0] << ", ";
+	  for (uint32_t i = 0; i < array.that.cols(); ++i) {
+		os << array[-1] << ", ";
+	  }
+	  os << array[-1] << "]";
+	}
+	return os;
+  }
   };
 
 
@@ -191,11 +205,11 @@ public:
   }
 
   template <typename U>
-  DynArray<U> map(std::function<U(T, uint32_t, uint32_t)> f) const {
-	DynArray<U> result (data.size());
+  DynDoubleArray<U> map(std::function<U(T, uint32_t, uint32_t)> f) const {
+	DynDoubleArray<U> result (rows(), cols());
 	for (uint32_t i = 0; i < rows(); ++i) {
 	  for (uint32_t j = 0; j < cols(); ++j) {
-		result[i] = f(get(i, j), i, j);
+		result[i][j] = f(get(i, j), i, j);
 	  }
 	}
 	return result;
@@ -213,6 +227,21 @@ public:
 		get(i, j) = f(get(i, j), i, j);
 	  }
 	}
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const DynDoubleArray<T>& array) {
+	if (array.rows() == 0) {
+	  os << "[[]]" << std::endl;
+	} else if (array.rows() == 1) {
+	  os << "[" << ConstRow(0, array) << "]\n";
+	} else {
+	  os << "[" << ConstRow(0, array) << ",\n";
+	  for (uint32_t r = 1; r < array.rows() - 1; ++r) {
+		os << " " << ConstRow(r, array) << ",\n";
+	  }
+	  os << " " << ConstRow(-1, array) << "]" << std::endl;
+	}
+	return os;
   }
 
 };
