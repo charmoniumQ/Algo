@@ -1,5 +1,6 @@
 CC = clang++
-CFLAGS = -g -pg -Weverything -Wno-c++98-compat -Wno-padded -Wno-float-equal -std=c++11 -O0 -I. -ferror-limit=200
+# CFLAGS = -g -pg -Weverything -Wno-c++98-compat -Wno-padded -Wno-float-equal -std=c++11 -O0 -I. -ferror-limit=200 -DMY_DEBUG
+CFLAGS = -Weverything -Wno-c++98-compat -Wno-padded -Wno-float-equal -std=c++11 -O3 -I.
 # FILES = test_adj_matrix.cpp
 FILES = SAGRP4.cpp
 TARGET = bin

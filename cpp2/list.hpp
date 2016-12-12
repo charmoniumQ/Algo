@@ -14,13 +14,21 @@ private:
   public:
 	Node(T data_) : data(data_), prev(nullptr), next(nullptr) { }
 	static void link(Node* left, Node* right) {
+	  #ifdef MY_DEBUG
+	  // Check nodes for validity if I am debugging this
 	  assert(left == nullptr || right == nullptr || left != right, "Cannot link the same two elements");
 	  assert(left == nullptr || left->valid(), "left is not valid");
 	  assert(right == nullptr || right->valid(), "right is not valid");
+	  #endif
+
 	  if (left != nullptr) { left->next = right; }
 	  if (right != nullptr) { right->prev = left; }
+
+	  #ifdef MY_DEBUG
+	  // Check nodes for validity if I am debugging this
 	  assert(left == nullptr || left->valid(), "left is not valid");
 	  assert(right == nullptr || right->valid(), "right is not valid");
+	  #endif
 	}
 	bool valid() {
 	  //checks that the double-link property is preserved
@@ -115,7 +123,9 @@ public:
   // Delete
   T pop_front() {
 	if (!empty()) {
+	  #ifdef MY_DEBUG
 	  valid();
+	  #endif
 	  --size_;
 	  T data = head->get_data();
 	  Node* oldhead = head;
@@ -126,7 +136,9 @@ public:
 		Node::link(nullptr, head);
 	  }
 	  delete oldhead;
+	  #ifdef MY_DEBUG
 	  valid();
+	  #endif
 	  return data;
 	} else {
 	  throw ex("Can't pop from empty list");
@@ -134,7 +146,9 @@ public:
   }
   T pop_back() {
 	if (!empty()) {
+	  #ifdef MY_DEBUG
 	  valid();
+	  #endif
 	  --size_;
 	  T data = tail->get_data();
 	  Node* oldtail = tail;
@@ -145,7 +159,9 @@ public:
 		Node::link(tail, nullptr);
 	  }
 	  delete oldtail;
+	  #ifdef MY_DEBUG
 	  valid();
+	  #endif
 	  return data;
 	} else {
 	  throw ex("Can't pop from empty list");
